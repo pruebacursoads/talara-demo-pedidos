@@ -370,11 +370,20 @@ export function crearPunto(db: DB, nombre: string, hora: string) {
   const id = nextId(db, 'puntos')
   db.puntos.push({ id, codigo: `U${String(id).padStart(3, '0')}`, nombre: nombre.trim(), direccion: 'Por confirmar', hora, activo: true })
 }
-export function crearPlato(db: DB, nombre: string, tipoId: number, precio: number, icono: string) {
+// Si se indican variantes (ej. "Pierna, Pecho, Encuentro"), se crea un plato por variante dentro de la misma familia:
+// cada variante tiene su propio stock, como en el Excel del cliente.
+export function crearPlato(db: DB, nombre: string, tipoId: number, precio: number, icono: string, variantes = '', etiqueta = 'Presa') {
   if (!nombre.trim() || !(precio >= 0)) throw new ErrorNegocio('DATOS', 'Escribe el nombre y un precio válido.')
-  if (db.platos.some(p => p.tipoId === tipoId && p.nombre.toLowerCase() === nombre.trim().toLowerCase())) throw new ErrorNegocio('UQ', 'Ese plato ya existe en ese tipo.')
-  const id = nextId(db, 'platos')
-  db.platos.push({ id, codigo: `P${String(id).padStart(5, '0')}`, tipoId, nombre: nombre.trim(), descripcion: '', precioSuelto: precio, icono: icono || '🍽️', activo: true })
+  const lista = variantes.split(',').map(v => v.trim()).filter(Boolean)
+  const base = nombre.trim()
+  const crear = (n: string, variante?: string) => {
+    if (db.platos.some(p => p.tipoId === tipoId && p.nombre.toLowerCase() === n.toLowerCase())) throw new ErrorNegocio('UQ', `"${n}" ya existe en ese tipo.`)
+    const id = nextId(db, 'platos')
+    db.platos.push({ id, codigo: `P${String(id).padStart(5, '0')}`, tipoId, nombre: n, descripcion: '', precioSuelto: precio, icono: icono || '🍽️', activo: true,
+      ...(variante ? { familia: base, variante, etiquetaVariante: etiqueta.trim() || 'Opción' } : {}) })
+  }
+  if (lista.length) lista.forEach(v => crear(`${base} (${v.toLowerCase()})`, v))
+  else crear(base)
 }
 export function agregarAlMenu(db: DB, menuId: number, platoId: number, stock: number) {
   if (db.mdp.some(m => m.menuId === menuId && m.platoId === platoId)) throw new ErrorNegocio('UQ', 'Ese plato ya está en el menú.')

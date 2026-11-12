@@ -11,7 +11,7 @@ export function Catalogos({ db }: { db: DB }) {
   const [msg, setMsg] = useState('')
   const [tipo, setTipo] = useState({ nombre: '', rol: 'entrada' as Rol })
   const [punto, setPunto] = useState({ nombre: '', hora: '13:00' })
-  const [plato, setPlato] = useState({ nombre: '', tipoId: 1, precio: '5', icono: '🍽️' })
+  const [plato, setPlato] = useState({ nombre: '', tipoId: 1, precio: '5', icono: '🍽️', variantes: '' })
   const run = (fn: (d: DB) => void, ok: string) => { const r = ejecutar(fn); setMsg(r.ok ? ok : r.error) }
   const toggle = (tabla: 'tipos' | 'platos' | 'puntos', id: number) => ejecutar(d => {
     const x = (d[tabla] as { id: number; activo: boolean }[]).find(y => y.id === id)!
@@ -54,11 +54,14 @@ export function Catalogos({ db }: { db: DB }) {
           <select aria-label="Tipo" value={plato.tipoId} onChange={e => setPlato(x => ({ ...x, tipoId: Number(e.target.value) }))}>{db.tipos.filter(t => t.activo).map(t => <option key={t.id} value={t.id}>{t.nombre}</option>)}</select>
           <input type="number" aria-label="Precio suelto" min={0} step="0.5" value={plato.precio} onChange={e => setPlato(x => ({ ...x, precio: e.target.value }))} style={{ width: 100, minWidth: 0 }} />
           <input type="text" aria-label="Ícono" value={plato.icono} onChange={e => setPlato(x => ({ ...x, icono: e.target.value }))} style={{ width: 70, minWidth: 0 }} />
-          <button className="btn sea" onClick={() => { run(d => crearPlato(d, plato.nombre, plato.tipoId, Number(plato.precio), plato.icono), `Plato "${plato.nombre}" creado.`); setPlato(x => ({ ...x, nombre: '' })) }}>Crear plato</button>
+          <input type="text" aria-label="Presas u opciones (opcional)" placeholder="Presas: Pierna, Pecho, Encuentro (opcional)" value={plato.variantes}
+            onChange={e => setPlato(x => ({ ...x, variantes: e.target.value }))} style={{ minWidth: 260 }} />
+          <button className="btn sea" onClick={() => { run(d => crearPlato(d, plato.nombre, plato.tipoId, Number(plato.precio), plato.icono, plato.variantes), `Plato "${plato.nombre}" creado.`); setPlato(x => ({ ...x, nombre: '', variantes: '' })) }}>Crear plato</button>
         </div>
+        <p className="small muted">Si escribes presas u opciones separadas por comas, se crea una variante por cada una, con su propio stock. En la web se muestran en una sola tarjeta con el selector.</p>
         <div className="tbl"><table><thead><tr><th>Código</th><th>Plato</th><th>Tipo</th><th>Precio suelto</th><th></th></tr></thead>
           <tbody>{db.platos.map(p => (
-            <tr key={p.id} style={{ opacity: p.activo ? 1 : .5 }}><td className="mono">{p.codigo}</td><td>{p.icono} {p.nombre}</td><td>{db.tipos.find(t => t.id === p.tipoId)?.nombre}</td>
+            <tr key={p.id} style={{ opacity: p.activo ? 1 : .5 }}><td className="mono">{p.codigo}</td><td>{p.icono} {p.nombre}{p.familia && <div className="small muted">{p.etiquetaVariante}: {p.variante} · familia {p.familia}</div>}</td><td>{db.tipos.find(t => t.id === p.tipoId)?.nombre}</td>
               <td className="num">{soles(p.precioSuelto)}</td><td><button className="btn sm" onClick={() => toggle('platos', p.id)}>{p.activo ? 'Desactivar' : 'Activar'}</button></td></tr>))}</tbody></table></div>
       </div>
     </>

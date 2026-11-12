@@ -3,7 +3,7 @@ import type { DB } from './types'
 import { hoy, manana } from './fechas'
 import { avanzarEstado, avanzarVisita, registrarPedido, registrarVisita, anularTicket } from './reglas'
 
-export const VERSION = 3
+export const VERSION = 4
 
 export function crearBaseInicial(): DB {
   const db: DB = {
@@ -20,15 +20,15 @@ export function crearBaseInicial(): DB {
       { id: 1, codigo: 'P00001', tipoId: 1, nombre: 'Causa de atún', descripcion: 'Papa amarilla, atún, palta y mayonesa', precioSuelto: 5, icono: '🥔', activo: true },
       { id: 2, codigo: 'P00002', tipoId: 1, nombre: 'Ensalada de palta', descripcion: 'Palta, tomate, cebolla y limón', precioSuelto: 5, icono: '🥑', activo: true },
       { id: 3, codigo: 'P00003', tipoId: 1, nombre: 'Tequeños', descripcion: 'Con queso y guacamole', precioSuelto: 6, icono: '🧀', activo: true },
-      { id: 4, codigo: 'P00004', tipoId: 2, nombre: 'Arroz con pollo (pierna)', descripcion: 'Con crema huancaína', precioSuelto: 11, icono: '🍗', activo: true },
-      { id: 5, codigo: 'P00005', tipoId: 2, nombre: 'Arroz con pollo (pecho)', descripcion: 'Con crema huancaína', precioSuelto: 11, icono: '🍗', activo: true },
-      { id: 6, codigo: 'P00006', tipoId: 2, nombre: 'Arroz con pollo (encuentro)', descripcion: 'Con crema huancaína', precioSuelto: 11, icono: '🍗', activo: true },
+      { id: 4, codigo: 'P00004', tipoId: 2, nombre: 'Arroz con pollo (pierna)', descripcion: 'Con crema huancaína', precioSuelto: 11, icono: '🍗', activo: true, familia: 'Arroz con pollo', variante: 'Pierna', etiquetaVariante: 'Presa' },
+      { id: 5, codigo: 'P00005', tipoId: 2, nombre: 'Arroz con pollo (pecho)', descripcion: 'Con crema huancaína', precioSuelto: 11, icono: '🍗', activo: true, familia: 'Arroz con pollo', variante: 'Pecho', etiquetaVariante: 'Presa' },
+      { id: 6, codigo: 'P00006', tipoId: 2, nombre: 'Arroz con pollo (encuentro)', descripcion: 'Con crema huancaína', precioSuelto: 11, icono: '🍗', activo: true, familia: 'Arroz con pollo', variante: 'Encuentro', etiquetaVariante: 'Presa' },
       { id: 7, codigo: 'P00007', tipoId: 2, nombre: 'Chicharrón de pescado', descripcion: 'Con yuca y sarsa criolla', precioSuelto: 11, icono: '🐟', activo: true },
       { id: 8, codigo: 'P00008', tipoId: 2, nombre: 'Fetuchini chifa cau cau', descripcion: 'Salteado al wok', precioSuelto: 11, icono: '🍝', activo: true },
       { id: 9, codigo: 'P00009', tipoId: 2, nombre: 'Lomo saltado', descripcion: 'Con papas fritas y arroz', precioSuelto: 12, icono: '🥩', activo: true },
-      { id: 10, codigo: 'P00010', tipoId: 2, nombre: 'Estofado de pollo (pierna)', descripcion: 'Con arroz blanco', precioSuelto: 11, icono: '🍲', activo: true },
-      { id: 11, codigo: 'P00011', tipoId: 2, nombre: 'Estofado de pollo (pecho)', descripcion: 'Con arroz blanco', precioSuelto: 11, icono: '🍲', activo: true },
-      { id: 12, codigo: 'P00012', tipoId: 2, nombre: 'Estofado de pollo (encuentro)', descripcion: 'Con arroz blanco', precioSuelto: 11, icono: '🍲', activo: true },
+      { id: 10, codigo: 'P00010', tipoId: 2, nombre: 'Estofado de pollo (pierna)', descripcion: 'Con arroz blanco', precioSuelto: 11, icono: '🍲', activo: true, familia: 'Estofado de pollo', variante: 'Pierna', etiquetaVariante: 'Presa' },
+      { id: 11, codigo: 'P00011', tipoId: 2, nombre: 'Estofado de pollo (pecho)', descripcion: 'Con arroz blanco', precioSuelto: 11, icono: '🍲', activo: true, familia: 'Estofado de pollo', variante: 'Pecho', etiquetaVariante: 'Presa' },
+      { id: 12, codigo: 'P00012', tipoId: 2, nombre: 'Estofado de pollo (encuentro)', descripcion: 'Con arroz blanco', precioSuelto: 11, icono: '🍲', activo: true, familia: 'Estofado de pollo', variante: 'Encuentro', etiquetaVariante: 'Presa' },
       { id: 13, codigo: 'P00013', tipoId: 3, nombre: 'Bistec a lo pobre', descripcion: 'Con arroz blanco, plátano y huevo', precioSuelto: 15, icono: '🍳', activo: true },
       { id: 14, codigo: 'P00014', tipoId: 4, nombre: 'Solo pollo a la plancha', descripcion: 'Porción adicional, en envase aparte', precioSuelto: 4, icono: '🍗', activo: true },
       { id: 15, codigo: 'P00015', tipoId: 4, nombre: 'Solo bistec', descripcion: 'Porción adicional, en envase aparte', precioSuelto: 5, icono: '🥩', activo: true },
@@ -59,7 +59,7 @@ export function crearBaseInicial(): DB {
     db.movimientos.push({ id: mid, mdpId: mid, tipo: 'carga', cantidad: stock, motivo: 'Carga inicial del menú', at: new Date().toISOString() })
   }
   ;[1, 2, 3, 17].forEach(id => cargar(1, id, 30))
-  ;[4, 7, 8, 9, 11, 19].forEach(id => cargar(1, id, 10))
+  ;[4, 5, 6, 7, 8, 9, 10, 11, 12, 19].forEach(id => cargar(1, id, 10))
   cargar(1, 13, 3)
   ;[14, 15, 16].forEach(id => cargar(1, id, 2))
   ;[17, 18].forEach(id => cargar(2, id, 30))

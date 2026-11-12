@@ -7,7 +7,11 @@ export type Origen = 'cliente' | 'admin' | 'sistema'
 export type Etapa = 'vio_menu' | 'armo_pedido' | 'inicio_datos' | 'confirmo'
 
 export interface TipoPlato { id: number; codigo: string; nombre: string; rol: Rol; orden: number; visibleWeb: boolean; activo: boolean }
-export interface Plato { id: number; codigo: string; tipoId: number; nombre: string; descripcion: string; precioSuelto: number; icono: string; activo: boolean }
+// familia + variante = desglose de un plato (ej. "Arroz con pollo" · presa "Pecho"). Cada variante tiene su propio stock.
+export interface Plato {
+  id: number; codigo: string; tipoId: number; nombre: string; descripcion: string; precioSuelto: number; icono: string; activo: boolean
+  familia?: string; variante?: string; etiquetaVariante?: string
+}
 export interface PuntoEntrega { id: number; codigo: string; nombre: string; direccion: string; hora: string; activo: boolean }
 export interface MenuDia { id: number; fecha: string; precioMenu: number; refresco: string; estado: 'borrador' | 'publicado' | 'cerrado' }
 export interface MenuDiaPlato {

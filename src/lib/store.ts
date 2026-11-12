@@ -62,6 +62,12 @@ export function reiniciarDemo() {
   avisar()
 }
 
+// "¿No eres tú?": desvincula este navegador del cliente (útil en equipos compartidos).
+export function olvidarDispositivo() {
+  try { localStorage.setItem('talara-dispositivo', crypto.randomUUID()) } catch { /* sin almacenamiento */ }
+  window.location.reload()
+}
+
 export function tokenDispositivo(): string {
   try {
     let t = localStorage.getItem('talara-dispositivo')

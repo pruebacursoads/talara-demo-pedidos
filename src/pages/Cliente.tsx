@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ejecutar, tokenDispositivo, useDB } from '../lib/store'
+import { ejecutar, olvidarDispositivo, tokenDispositivo, useDB } from '../lib/store'
 import { anularTicket, avanzarVisita, disponible, registrarComprobante, registrarPedido, registrarVisita } from '../lib/reglas'
 import type { ComidaInput } from '../lib/reglas'
 import type { DB, MenuDiaPlato } from '../lib/types'
@@ -9,14 +9,27 @@ import { Ticket80 } from '../components/Ticket80'
 import { BannerDemo } from '../components/BannerDemo'
 
 interface Comida extends ComidaInput { key: number }
-type Info = { m: MenuDiaPlato; nombre: string; desc: string; icono: string; rol: string; tipo: string; orden: number }
+type Info = {
+  m: MenuDiaPlato; nombre: string; desc: string; icono: string; rol: string; tipo: string; orden: number
+  grupo: string; titulo: string; variante?: string; etiqueta?: string
+}
 
 function infoMenu(db: DB, menuId: number): Info[] {
   return db.mdp.filter(m => m.menuId === menuId && m.estado !== 'retirado').map(m => {
     const p = db.platos.find(x => x.id === m.platoId)!
     const t = db.tipos.find(x => x.id === p.tipoId)!
-    return { m, nombre: p.nombre, desc: p.descripcion, icono: p.icono, rol: t.rol, tipo: t.nombre, orden: t.orden }
+    return {
+      m, nombre: p.nombre, desc: p.descripcion, icono: p.icono, rol: t.rol, tipo: t.nombre, orden: t.orden,
+      grupo: p.familia ? `f:${p.familia}` : `p:${m.id}`, titulo: p.familia ?? p.nombre, variante: p.variante, etiqueta: p.etiquetaVariante,
+    }
   }).filter(i => db.tipos.find(t => t.nombre === i.tipo)?.visibleWeb)
+}
+
+// Agrupa las variantes de un mismo plato (ej. Arroz con pollo: pierna, pecho, encuentro) en una sola tarjeta.
+function agrupar(items: Info[]) {
+  const mapa = new Map<string, Info[]>()
+  items.forEach(i => mapa.set(i.grupo, [...(mapa.get(i.grupo) ?? []), i]))
+  return [...mapa.values()]
 }
 
 export default function Cliente() {
@@ -29,6 +42,7 @@ export default function Cliente() {
   const [abierto, setAbierto] = useState(false)
   const [resultado, setResultado] = useState<number | null>(null)
   const [visitaId, setVisitaId] = useState<number | undefined>()
+  const [presa, setPresa] = useState<Record<string, number>>({})
   const keyRef = useRef(1)
 
   const dispositivo = db.dispositivos.find(d => d.token === token)
@@ -77,7 +91,10 @@ export default function Cliente() {
       <BannerDemo />
       <header className="pub-top"><div className="in">
         <Link to="/" className="logo">Talara<span>!</span><small>Sabores que nos unen</small></Link>
-        <Link to="/intranet" className="btn sm">Intranet</Link>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {conocido && <span className="pill sea">Hola, {conocido.nombres.split(' ')[0]}</span>}
+          <Link to="/intranet" className="btn sm">Intranet</Link>
+        </div>
       </div></header>
       <section className="hero"><div className="in">
         <div>
@@ -109,16 +126,31 @@ export default function Cliente() {
             <div className="sec" key={sec}>
               <div className="sec-h"><h2>{sec}</h2>{items.find(i => i.tipo === sec)?.rol === 'adicional' && <span className="muted small">Se agregan a una comida del carrito</span>}</div>
               <div className="grid-platos">
-                {items.filter(i => i.tipo === sec).map(i => {
+                {agrupar(items.filter(x => x.tipo === sec)).map(vars => {
+                  const g = vars[0].grupo
+                  const elegida = vars.find(v => v.m.id === presa[g]) ?? vars.find(v => libre(v.m) > 0) ?? vars[0]
+                  const i = elegida
                   const l = libre(i.m)
-                  const sel = armando.entrada === i.m.id || armando.fondo === i.m.id
+                  const lTotal = vars.reduce((s, v) => s + libre(v.m), 0)
+                  const sel = vars.some(v => armando.entrada === v.m.id || armando.fondo === v.m.id)
                   return (
-                    <article key={i.m.id} className={'plato' + (sel ? ' sel' : '') + (l === 0 ? ' off' : '')}>
+                    <article key={g} className={'plato' + (sel ? ' sel' : '') + (lTotal === 0 ? ' off' : '')}>
                       <div className="foto" aria-hidden="true">{i.icono}</div>
                       <div className="body">
-                        <h3>{i.nombre}</h3>
+                        <h3>{i.titulo}</h3>
                         <p className="desc">{i.desc}</p>
-                        <div>{l === 0 ? <span className="pill bad">Agotado</span> : l <= 5 ? <span className="pill warn">Quedan {l}</span> : <span className="pill ok">Disponible</span>}</div>
+                        {vars.length > 1 && (
+                          <div className="presas" role="group" aria-label={`${i.etiqueta ?? 'Opción'} de ${i.titulo}`}>
+                            <span className="small muted">{i.etiqueta ?? 'Opción'}:</span>
+                            {vars.map(v => (
+                              <button key={v.m.id} type="button" className={'presa' + (v.m.id === i.m.id ? ' on' : '')} aria-pressed={v.m.id === i.m.id}
+                                disabled={libre(v.m) === 0} onClick={() => setPresa(x => ({ ...x, [g]: v.m.id }))}>
+                                {v.variante}<small>{libre(v.m) === 0 ? 'agotado' : `quedan ${libre(v.m)}`}</small>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        <div>{l === 0 ? <span className="pill bad">Agotado</span> : l <= 5 ? <span className="pill warn">Quedan {l}{i.variante ? ` (${i.variante.toLowerCase()})` : ''}</span> : <span className="pill ok">Disponible</span>}</div>
                         <div className="row">
                           {(i.rol === 'entrada' || i.rol === 'fondo') && (
                             <button className={'btn sm' + (sel ? ' primary' : '')} disabled={l === 0 && !sel} onClick={() => elegir(i.rol as 'entrada' | 'fondo', i.m.id)}>
@@ -151,10 +183,12 @@ export default function Cliente() {
           {conocido && (
             <div className="fid">
               <b>¡Hola de nuevo, {conocido.nombres.split(' ')[0]}!</b>
+              <span className="small">Tus datos ya están listos: no tienes que volver a escribirlos.</span>
               {fid && <>
                 <span>Llevas {fid.acumulados} de {db.parametros.consumosPremio} menús para tu menú gratis{fid.disponibles > 0 ? ` · tienes ${fid.disponibles} gratis` : ''}.</span>
                 <div className="bar"><span style={{ width: `${(fid.acumulados / db.parametros.consumosPremio) * 100}%` }} /></div>
               </>}
+              <button type="button" className="btn sm ghost" style={{ alignSelf: 'flex-start' }} onClick={olvidarDispositivo}>¿No eres {conocido.nombres.split(' ')[0]}? Cambiar</button>
             </div>
           )}
           {carrito.length === 0 && <div className="vacio">Elige una entrada y un fondo para armar tu menú, o pide un plato suelto.</div>}

@@ -41,7 +41,7 @@ export default function Intranet() {
 
   const pendRevision = db.pedidos.filter(p => p.estadoRevision === 'pendiente' || p.estadoPago === 'pendiente').length
   const nav = (cls: string) => LINKS.map(([to, label]) => (
-    <NavLink key={to} to={to} className={({ isActive }) => (isActive ? 'active ' : '') + cls}>
+    <NavLink key={to} to={`/intranet/${to}`} className={({ isActive }) => (isActive ? 'active ' : '') + cls}>
       <span>{label}</span>{to === 'pedidos' && pendRevision > 0 && <span className="badge">{pendRevision}</span>}
     </NavLink>
   ))
@@ -61,7 +61,7 @@ export default function Intranet() {
         <nav className="mobile-nav">{nav('')}<a href="#/">Web</a></nav>
         <main className="adm-main">
           <Routes>
-            <Route index element={<Navigate to="panel" replace />} />
+            <Route index element={<Navigate to="/intranet/panel" replace />} />
             <Route path="panel" element={<Panel db={db} />} />
             <Route path="pedidos" element={<Pedidos db={db} />} />
             <Route path="cocina" element={<Cocina db={db} />} />

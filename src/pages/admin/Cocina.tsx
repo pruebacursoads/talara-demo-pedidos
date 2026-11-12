@@ -25,10 +25,25 @@ export function Cocina({ db }: { db: DB }) {
             <h2>{tp}</h2>
             <div className="tbl"><table>
               <thead><tr><th>Plato</th><th>A preparar</th><th>Quedan</th></tr></thead>
-              <tbody>{filas.filter(f => f.t.nombre === tp).map(f => (
-                <tr key={f.m.id}><td>{f.p.icono} {f.p.nombre}</td><td className="num"><b style={{ fontSize: 18 }}>{f.cant}</b></td>
-                  <td className="num">{f.disp === 0 ? <span className="pill bad">Agotado</span> : f.disp}</td></tr>
-              ))}</tbody>
+              <tbody>{(() => {
+                const rows = filas.filter(f => f.t.nombre === tp)
+                const vistos = new Set<string>()
+                return rows.flatMap(f => {
+                  const fila = (x: typeof f, sub: boolean) => (
+                    <tr key={x.m.id}><td style={sub ? { paddingLeft: 30 } : undefined}>{sub ? `${x.p.etiquetaVariante ?? 'Opción'}: ${x.p.variante}` : <>{x.p.icono} {x.p.nombre}</>}</td>
+                      <td className="num"><b style={{ fontSize: sub ? 15 : 18 }}>{x.cant}</b></td>
+                      <td className="num">{x.disp === 0 ? <span className="pill bad">Agotado</span> : x.disp}</td></tr>)
+                  if (!f.p.familia) return [fila(f, false)]
+                  if (vistos.has(f.p.familia)) return []
+                  vistos.add(f.p.familia)
+                  const fam = rows.filter(x => x.p.familia === f.p.familia)
+                  return [
+                    <tr key={'fam-' + f.p.familia} style={{ background: 'var(--sunken)' }}><td><b>{f.p.icono} {f.p.familia}</b></td>
+                      <td className="num"><b style={{ fontSize: 18 }}>{fam.reduce((s, x) => s + x.cant, 0)}</b></td><td /></tr>,
+                    ...fam.map(x => fila(x, true)),
+                  ]
+                })
+              })()}</tbody>
             </table></div>
           </div>
         ))}

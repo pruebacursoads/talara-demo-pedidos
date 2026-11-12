@@ -34,7 +34,7 @@ export function Panel({ db }: { db: DB }) {
                 <td className="num">{db.tickets.filter(t => t.pedidoId === p.id && t.estado !== 'anulado').map(t => t.numero).join(', ') || '—'}</td>
                 <td className="num">{soles(p.total)}</td><td><EstadoPill e={p.estado} /></td></tr>
             ))}</tbody></table></div>
-          <Link to="../pedidos">Ver todos los pedidos</Link>
+          <Link to="/intranet/pedidos">Ver todos los pedidos</Link>
         </div>
         <div className="panel">
           <h2>Alertas</h2>
