@@ -52,7 +52,7 @@ export default function Intranet() {
         <div className="logo">Talara<span>!</span><small>Intranet</small></div>
         <nav className="adm-nav">{nav('')}</nav>
         <div className="foot">
-          <span>Sesión: Maritza (Administradora)</span>
+          <span>Sesión: Administradora (demo)</span>
           <a href="#/" style={{ color: '#fff' }}>Ver web del cliente</a>
           <button className="btn sm" onClick={() => reiniciarDemo()}>Reiniciar datos de la demo</button>
         </div>

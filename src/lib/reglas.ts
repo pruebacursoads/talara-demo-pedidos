@@ -26,7 +26,7 @@ function evento(db: DB, tipo: DB['eventos'][number]['tipo'], texto: string, pedi
   db.eventos.unshift({ id: nextId(db, 'eventos'), tipo, texto, at: ahora(), pedidoId })
   // Las alertas inmediatas salen por WhatsApp a los administradores (plantilla de utilidad).
   if (tipo !== 'anulacion') {
-    mensaje(db, 'alerta_admin', 'Maritza (admin)', `Alerta Talara: ${texto}`, pedidoId)
+    mensaje(db, 'alerta_admin', 'Administradora', `Alerta Talara: ${texto}`, pedidoId)
   }
 }
 export function mensaje(db: DB, motivo: DB['notificaciones'][number]['motivo'], destino: string, texto: string, pedidoId?: number) {
@@ -354,7 +354,7 @@ export function enviarResumen(db: DB) {
   const hoyIso = new Date().toISOString().slice(0, 10)
   const sinPedido = db.visitas.filter(v => !v.pedidoId).length
   const anul = db.anulaciones.filter(a => a.at.slice(0, 10) === hoyIso).length
-  mensaje(db, 'alerta_admin', 'Maritza (admin)', `Resumen: ${sinPedido} visita(s) sin pedido y ${anul} anulación(es). Ver detalle en la intranet.`)
+  mensaje(db, 'alerta_admin', 'Administradora', `Resumen: ${sinPedido} visita(s) sin pedido y ${anul} anulación(es). Ver detalle en la intranet.`)
 }
 
 // ------------------------------------------------------------------ catálogos

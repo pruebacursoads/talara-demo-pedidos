@@ -3,7 +3,7 @@ import type { DB } from './types'
 import { hoy, manana } from './fechas'
 import { avanzarEstado, avanzarVisita, registrarPedido, registrarVisita, anularTicket } from './reglas'
 
-export const VERSION = 4
+export const VERSION = 5
 
 export function crearBaseInicial(): DB {
   const db: DB = {
@@ -71,33 +71,33 @@ export function crearBaseInicial(): DB {
   // Pedidos de ejemplo para que la intranet no empiece vacía.
   const m = (codigo: string, menuId = 1) => db.mdp.find(x => x.menuId === menuId && db.platos.find(p => p.id === x.platoId)!.codigo === codigo)!.id
   const base = { menuId: 1, aceptaWhatsapp: true, aceptaMarketing: true, usarPremio: false, conAdelanto: false }
-  const p1 = registrarPedido(db, { ...base, nombre: 'María Cárdenas', celular: '987456512', email: 'maria@correo.test', puntoId: 2,
+  const p1 = registrarPedido(db, { ...base, nombre: 'Ana Torres', celular: '900000001', email: 'ana@ejemplo.test', puntoId: 2,
     comidas: [1, 2, 3].map(() => ({ tipo: 'menu' as const, mdpIds: [m('P00001'), m('P00011')], adicionales: [] })) })
-  registrarPedido(db, { ...base, nombre: 'José Luján', celular: '985647128', puntoId: 1, aceptaMarketing: false,
+  registrarPedido(db, { ...base, nombre: 'Pedro Ruiz', celular: '900000002', puntoId: 1, aceptaMarketing: false,
     comidas: [
       { tipo: 'menu', mdpIds: [m('P00001'), m('P00008')], adicionales: [] },
       { tipo: 'menu', mdpIds: [m('P00002'), m('P00008')], adicionales: [] },
       { tipo: 'suelto', mdpIds: [m('P00009')], adicionales: [] },
     ] })
-  const p3 = registrarPedido(db, { ...base, nombre: 'Antony Ramos', celular: '912345678', puntoId: 1, observaciones: 'Cambio de papa por camote',
+  const p3 = registrarPedido(db, { ...base, nombre: 'Luis Campos', celular: '900000003', puntoId: 1, observaciones: 'Cambio de papa por camote',
     comidas: [{ tipo: 'menu', mdpIds: [m('P00003'), m('P00007')], adicionales: [{ mdpId: m('P00016'), cantidad: 1 }] }] })
-  const p4 = registrarPedido(db, { ...base, nombre: 'Lucía Paredes', celular: '955555555', puntoId: 2,
+  const p4 = registrarPedido(db, { ...base, nombre: 'Carla Díaz', celular: '900000004', puntoId: 2,
     comidas: [{ tipo: 'menu', mdpIds: [m('P00017'), m('P00009')], adicionales: [] }, { tipo: 'menu', mdpIds: [m('P00017'), m('P00019')], adicionales: [] }] })
-  registrarPedido(db, { ...base, menuId: 2, conAdelanto: true, nombre: 'Carlos Vega', celular: '944111222', puntoId: 1,
+  registrarPedido(db, { ...base, menuId: 2, conAdelanto: true, nombre: 'Jorge Salas', celular: '900000005', puntoId: 1,
     comidas: [{ tipo: 'menu', mdpIds: [m('P00018', 2), m('P00020', 2)], adicionales: [] }] })
 
   avanzarEstado(db, p1, 'en_preparacion')
   avanzarEstado(db, p3, 'en_preparacion')
   avanzarEstado(db, p3, 'listo')
   anularTicket(db, db.tickets.filter(t => t.pedidoId === p4)[1].id, 'cliente', 'Ya no lo necesito')
-  // María ya tenía 7 menús entregados antes: le faltan 3 para su menú gratis.
+  // Ana ya tenía 7 menús entregados antes: le faltan 3 para su menú gratis.
   db.fidelidad.push({ clienteId: 1, acumulados: 7, historicos: 7, disponibles: 0, canjeados: 0 })
 
   // Impresiones ya hechas y visitas del día (embudo).
   db.trabajos.forEach(t => { t.estado = 'impreso'; t.impresoAt = t.at; const tk = db.tickets.find(x => x.id === t.ticketId); if (tk) tk.vecesImpreso = 1 })
   for (let i = 0; i < 9; i++) {
     const v = registrarVisita(db, `demo-anon-${i}`, 1)
-    if (i === 2) avanzarVisita(db, v, 'inicio_datos', '966777888', 'Rosa')
+    if (i === 2) avanzarVisita(db, v, 'inicio_datos', '900000006', 'Rosa')
     else if (i % 3 === 0) avanzarVisita(db, v, 'armo_pedido')
   }
   db.pedidos.forEach((p, k) => {

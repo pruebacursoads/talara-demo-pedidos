@@ -28,7 +28,7 @@ export function Clientes({ db }: { db: DB }) {
               </tr>)
           })}</tbody>
         </table></div>
-        <p className="small muted">Para probar la fidelidad: entrega pedidos de María desde "Pedidos". Le faltan 3 menús para su menú gratis.</p>
+        <p className="small muted">Para probar la fidelidad: entrega el pedido de Ana desde "Pedidos". Le faltan 3 menús para su menú gratis.</p>
       </div>
     </>
   )

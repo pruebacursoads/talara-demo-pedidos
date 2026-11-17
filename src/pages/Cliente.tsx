@@ -256,7 +256,7 @@ function Checkout({ db, menuId, carrito, manana, token, visitaId, onCerrar, onLi
       <div className="modal">
         <h2 id="ck-t">{c ? `Confirma tu pedido, ${c.nombres.split(' ')[0]}` : 'Tus datos para la entrega'}</h2>
         <label className="field">Nombre y apellido<input id="ck-nombre" type="text" value={nombre} onChange={e => setNombre(e.target.value)} /></label>
-        <label className="field">Celular (WhatsApp)<input id="ck-cel" type="tel" inputMode="numeric" placeholder="987654321" value={celular}
+        <label className="field">Celular<input id="ck-cel" type="tel" inputMode="numeric" placeholder="9XXXXXXXX" value={celular}
           onChange={e => setCelular(e.target.value)} onBlur={() => visitaId && celular && ejecutar(x => avanzarVisita(x, visitaId, 'inicio_datos', celular, nombre))} /></label>
         <label className="field">Correo (opcional)<input id="ck-mail" type="email" value={email} onChange={e => setEmail(e.target.value)} /></label>
         <div className="field">Punto de entrega
